@@ -310,7 +310,6 @@ function setupBuilderListeners() {
     addStepBtn.addEventListener('click', addStep);
     saveRecipeBtn.addEventListener('click', saveRecipe);
     clearBuilderBtn.addEventListener('click', clearBuilder);
-    finalProductEffects.addEventListener('input', updateFinalPrice);
 }
 
 // ===== STEP MANAGEMENT =====
