@@ -218,6 +218,76 @@ main {
     color: var(--text-lighter);
 }
 
+/* BASE DRUG SELECTION */
+
+.base-drug-section {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    padding: 20px;
+    border-radius: 4px;
+    margin-bottom: 30px;
+}
+
+.base-drug-section h3 {
+    font-size: 16px;
+    margin-bottom: 15px;
+    color: var(--text);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.base-drug-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.base-drug-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.base-drug-option:hover {
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.base-drug-option.selected {
+    border-color: var(--accent);
+    background: #f0f0f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.base-drug-icon {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 3px;
+    margin-bottom: 8px;
+}
+
+.base-drug-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.base-drug-price {
+    font-size: 11px;
+    color: var(--text-light);
+}
+
 .form-group {
     margin-bottom: 25px;
 }
@@ -266,11 +336,18 @@ main {
 
 .steps-container h3 {
     font-size: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     color: var(--text);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+.steps-info {
+    font-size: 12px;
+    color: var(--text-lighter);
+    margin-bottom: 15px;
+    font-style: italic;
 }
 
 .step-item {
@@ -282,6 +359,21 @@ main {
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 3px;
+}
+
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 100px;
+}
+
+.step-number {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .step-inputs {
@@ -309,8 +401,53 @@ main {
 .step-equals {
     font-weight: 600;
     color: var(--text);
-    padding: 0 5px;
+    padding: 0 8px;
     white-space: nowrap;
+    font-size: 14px;
+}
+
+.previous-result {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.previous-result-value {
+    font-weight: 500;
+    color: var(--text);
+}
+
+.btn-remove-step,
+.remove-step {
+    padding: 8px 12px;
+    background: var(--bg-alt);
+    border: 1px solid #d9534f;
+    color: #d9534f;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.btn-remove-step:hover,
+.remove-step:hover {
+    background: #d9534f;
+    color: white;
+    box-shadow: 0 2px 6px rgba(217, 83, 79, 0.3);
+}
+
+.btn-remove-step:active,
+.remove-step:active {
+    transform: scale(0.95);
 }
 
 .btn-remove-step {

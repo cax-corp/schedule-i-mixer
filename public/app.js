@@ -118,6 +118,14 @@ const RecipeStorage = {
     }
 };
 
+// ===== BASE DRUGS DATA =====
+const baseDrugs = [
+    { id: 'marijuana', name: 'Marijuana', price: 5, icon: 'cuke.png' },
+    { id: 'methamphetamine', name: 'Methamphetamine', price: 15, icon: 'addy.png' },
+    { id: 'shrooms', name: 'Shrooms', price: 8, icon: 'mega_bean.png' },
+    { id: 'cocaine', name: 'Cocaine', price: 12, icon: 'gasoline.png' }
+];
+
 // ===== INGREDIENTS DATA =====
 const ingredients = [
     { id: 'cuke', name: 'Cuke', price: 2, icon: 'cuke.png', base_effect: 'Energizing' },
@@ -179,6 +187,7 @@ const effects = [
 // ===== STATE =====
 let recipes = [];
 let currentRecipe = null;
+let selectedBaseDrug = null;  // Current base drug selection
 
 // ===== DOM ELEMENTS =====
 const themeToggle = document.getElementById('themeToggle');
@@ -187,6 +196,8 @@ const tabContents = document.querySelectorAll('.tab-content');
 const alertContainer = document.getElementById('alertContainer');
 
 // Builder elements
+const baseDrugSelect = document.getElementById('baseDrugSelect');
+const baseDrugValue = document.getElementById('baseDrugValue');
 const recipeName = document.getElementById('recipeName');
 const stepsContainer = document.getElementById('stepsContainer');
 const addStepBtn = document.getElementById('addStepBtn');
@@ -212,12 +223,33 @@ const resourcesList = document.getElementById('resourcesList');
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
+    initBaseDrugSelector();
     loadRecipes();
     setupTabListener();
     setupBuilderListeners();
     setupViewerListeners();
     populateEffectsHint();
 });
+
+// ===== BASE DRUG SELECTOR =====
+function initBaseDrugSelector() {
+    baseDrugSelect.innerHTML = baseDrugs.map(drug => `
+        <div class="base-drug-option" data-drug-id="${drug.id}" onclick="selectBaseDrug('${drug.id}', this)">
+            <img src="icons/${drug.icon}" alt="${drug.name}" class="base-drug-icon">
+            <div class="base-drug-name">${drug.name}</div>
+            <div class="base-drug-price">$${drug.price}</div>
+        </div>
+    `).join('');
+}
+
+function selectBaseDrug(drugId, element) {
+    document.querySelectorAll('.base-drug-option').forEach(el => {
+        el.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    selectedBaseDrug = baseDrugs.find(d => d.id === drugId);
+    baseDrugValue.value = drugId;
+}
 
 // ===== THEME MANAGEMENT =====
 function initTheme() {
@@ -283,74 +315,105 @@ function setupBuilderListeners() {
 
 // ===== STEP MANAGEMENT =====
 function addStep() {
-    const stepCount = stepsContainer.querySelectorAll('.step-item').length + 1;
+    if (!selectedBaseDrug) {
+        showAlert('⚠ Veuillez d\'abord choisir une drogue de base', 'warning');
+        return;
+    }
+    
+    const stepIndex = stepsContainer.querySelectorAll('.step-input-group').length;
     const stepDiv = document.createElement('div');
-    stepDiv.className = 'step-item';
+    stepDiv.className = 'step-input-group';
+    
+    // Calculate previous result name for display
+    let previousResult = selectedBaseDrug.name;
+    if (stepIndex > 0) {
+        const prevStep = stepsContainer.children[stepIndex - 1];
+        const prevSelect = prevStep.querySelector('.ingredient-select');
+        if (prevSelect && prevSelect.value) {
+            const prevIng = ingredients.find(i => i.id === prevSelect.value);
+            if (prevIng) {
+                previousResult = prevIng.name;
+            }
+        }
+    }
+    
+    const ingredientOptions = ingredients.map(ing => 
+        `<option value="${ing.id}">🌿 ${ing.name} (x${ing.function})</option>`
+    ).join('');
+    
     stepDiv.innerHTML = `
         <div class="step-header">
-            <span class="step-number">Étape ${stepCount}</span>
-            <button type="button" class="remove-step" onclick="removeStep(this)">Supprimer</button>
+            <span class="step-number">Étape ${stepIndex + 1}</span>
+            <button type="button" class="btn-remove-step" onclick="removeStep(${stepIndex})">✕ Supprimer</button>
         </div>
         <div class="step-inputs">
-            <div class="form-group">
-                <label>Ingrédient/Produit 1</label>
-                <select class="ingredient-select">
-                    <option value="">-- Sélectionner --</option>
-                    ${ingredients.map(ing => `<option value="${ing.id}">${ing.name}</option>`).join('')}
-                </select>
+            <div class="previous-result">
+                🧪 Résultat précédent: <strong>${previousResult}</strong>
             </div>
-            <div class="form-group">
-                <label>Ingrédient/Produit 2</label>
-                <select class="ingredient-select">
-                    <option value="">-- Sélectionner --</option>
-                    ${ingredients.map(ing => `<option value="${ing.id}">${ing.name}</option>`).join('')}
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Nom du produit intermédiaire</label>
-                <input type="text" class="step-product-name" placeholder="ex: Purple Cake">
-            </div>
+            <select class="ingredient-select" onchange="updatePrice(); updatePreviousResults();">
+                <option value="">+ Choisir ingrédient à mélanger...</option>
+                ${ingredientOptions}
+            </select>
         </div>
     `;
+    
     stepsContainer.appendChild(stepDiv);
 }
 
-function removeStep(btn) {
-    btn.closest('.step-item').remove();
+function removeStep(index) {
+    const steps = stepsContainer.querySelectorAll('.step-input-group');
+    if (index >= 0 && index < steps.length) {
+        steps[index].remove();
+        updatePrice();
+        updatePreviousResults();
+    }
+}
+
+function updatePreviousResults() {
+    const steps = stepsContainer.querySelectorAll('.step-input-group');
+    steps.forEach((stepDiv, idx) => {
+        let prevResult = idx === 0 ? selectedBaseDrug.name : 'Résultat précédent';
+        
+        if (idx > 0) {
+            const prevSelect = steps[idx - 1].querySelector('.ingredient-select');
+            if (prevSelect && prevSelect.value) {
+                const ing = ingredients.find(i => i.id === prevSelect.value);
+                if (ing) prevResult = ing.name;
+            }
+        }
+        
+        const prevDiv = stepDiv.querySelector('.previous-result strong');
+        if (prevDiv) prevDiv.textContent = prevResult;
+    });
 }
 
 // ===== PRICE CALCULATION =====
-function calculatePrice(basePrice, effectNames) {
-    const selectedEffects = effectNames
-        .split(',')
-        .map(e => e.trim())
-        .filter(e => e.length > 0);
+function updatePrice() {
+    if (!selectedBaseDrug) return;
     
-    const multiplierSum = selectedEffects.reduce((sum, effectName) => {
-        const effect = effects.find(e => e.name.toLowerCase() === effectName.toLowerCase());
-        return sum + (effect ? effect.multiplier : 0);
-    }, 0);
+    let totalPrice = selectedBaseDrug.price;
+    const steps = stepsContainer.querySelectorAll('.step-input-group');
     
-    return basePrice * (1 + multiplierSum);
-}
-
-function updateFinalPrice() {
-    const basePrice = parseFloat(finalProductPrice.value) || 0;
-    const effectsText = finalProductEffects.value;
-    const finalPrice = calculatePrice(basePrice, effectsText);
-    finalCalculatedPrice.textContent = `$${finalPrice.toFixed(2)}`;
+    steps.forEach(stepDiv => {
+        const select = stepDiv.querySelector('.ingredient-select');
+        if (select && select.value) {
+            const ing = ingredients.find(i => i.id === select.value);
+            if (ing) {
+                totalPrice += ing.function;
+            }
+        }
+    });
     
-    const selectedEffects = effectsText.split(',').map(e => e.trim()).filter(e => e.length > 0);
-    const totalMultiplier = selectedEffects.reduce((sum, effectName) => {
-        const effect = effects.find(e => e.name.toLowerCase() === effectName.toLowerCase());
-        return sum + (effect ? effect.multiplier : 0);
-    }, 0);
-    
-    effectsMultiplier.textContent = `Effects multiplier: +${(totalMultiplier * 100).toFixed(0)}%`;
+    finalCalculatedPrice.textContent = `$${totalPrice.toFixed(2)}`;
 }
 
 // ===== RECIPE SAVING =====
 async function saveRecipe() {
+    if (!selectedBaseDrug) {
+        showAlert('Choisissez une drogue de base', 'error');
+        return;
+    }
+
     const name = recipeName.value.trim();
     if (!name) {
         showAlert('Veuillez entrer un nom de recette', 'error');
@@ -358,16 +421,16 @@ async function saveRecipe() {
     }
 
     const steps = [];
-    stepsContainer.querySelectorAll('.step-item').forEach((stepDiv, idx) => {
-        const selects = stepDiv.querySelectorAll('.ingredient-select');
-        const productName = stepDiv.querySelector('.step-product-name').value;
-        
-        steps.push({
-            number: idx + 1,
-            ingredient1: selects[0].value,
-            ingredient2: selects[1].value,
-            intermediateProduct: productName
-        });
+    stepsContainer.querySelectorAll('.step-input-group').forEach((stepDiv, idx) => {
+        const select = stepDiv.querySelector('.ingredient-select');
+        if (select && select.value) {
+            const ing = ingredients.find(i => i.id === select.value);
+            steps.push({
+                number: idx + 1,
+                ingredientId: select.value,
+                ingredientName: ing.name
+            });
+        }
     });
 
     if (steps.length === 0) {
@@ -376,17 +439,27 @@ async function saveRecipe() {
     }
 
     const finalName = finalProductName.value.trim();
-    const finalPrice = parseFloat(finalProductPrice.value) || 0;
-    const finalEffects = finalProductEffects.value;
+    if (!finalName) {
+        showAlert('Entrez un nom pour le produit final', 'error');
+        return;
+    }
+
+    let totalPrice = selectedBaseDrug.price;
+    steps.forEach(step => {
+        const ing = ingredients.find(i => i.id === step.ingredientId);
+        if (ing) totalPrice += ing.function;
+    });
 
     const recipe = {
         id: `recipe_${Date.now()}`,
         name: name,
+        baseDrugId: selectedBaseDrug.id,
+        baseDrugName: selectedBaseDrug.name,
+        baseDrugPrice: selectedBaseDrug.price,
         steps: steps,
         finalProduct: {
             name: finalName,
-            basePrice: finalPrice,
-            effects: finalEffects
+            calculatedPrice: totalPrice
         },
         createdAt: new Date().toISOString()
     };
@@ -404,13 +477,14 @@ async function saveRecipe() {
 }
 
 function clearBuilder() {
+    selectedBaseDrug = null;
+    baseDrugValue.value = '';
+    document.querySelectorAll('.base-drug-option').forEach(el => el.classList.remove('selected'));
     recipeName.value = '';
     stepsContainer.innerHTML = '';
     finalProductName.value = '';
     finalProductPrice.value = '';
-    finalProductEffects.value = '';
     finalCalculatedPrice.textContent = '$0.00';
-    effectsMultiplier.textContent = '';
 }
 
 // ===== RECIPES LOADING =====
@@ -436,13 +510,14 @@ function renderRecipesList() {
         <div class="recipe-card">
             <h3>${recipe.name}</h3>
             <div class="recipe-info">
+                <div>Base: <strong>${recipe.baseDrugName}</strong></div>
                 <div>Étapes: <strong>${recipe.steps.length}</strong></div>
                 <div>Produit final: <strong>${recipe.finalProduct.name}</strong></div>
-                <div>Prix base: <strong>$${recipe.finalProduct.basePrice}</strong></div>
+                <div>Prix: <strong>$${recipe.finalProduct.calculatedPrice.toFixed(2)}</strong></div>
             </div>
             <div class="recipe-card-actions">
-                <button onclick="editRecipe(${recipe.id})" class="recipe-card-edit">✏️ Éditer</button>
-                <button onclick="deleteRecipe(${recipe.id})" class="recipe-card-delete">🗑️ Supprimer</button>
+                <button onclick="editRecipe('${recipe.id}')" class="recipe-card-edit">✏️ Éditer</button>
+                <button onclick="deleteRecipe('${recipe.id}')" class="recipe-card-delete">🗑️ Supprimer</button>
             </div>
         </div>
     `).join('');
@@ -466,49 +541,48 @@ function editRecipe(id) {
     const recipe = recipes.find(r => r.id === id);
     if (!recipe) return;
 
+    // Select base drug
+    const baseDrug = baseDrugs.find(d => d.id === recipe.baseDrugId);
+    if (baseDrug) {
+        selectBaseDrug(baseDrug.id, document.querySelector(`[data-drug-id="${baseDrug.id}"]`));
+    }
+
     // Load recipe into builder
     recipeName.value = recipe.name;
     finalProductName.value = recipe.finalProduct.name;
-    finalProductPrice.value = recipe.finalProduct.basePrice;
-    finalProductEffects.value = recipe.finalProduct.effects;
 
     stepsContainer.innerHTML = '';
-    recipe.steps.forEach(step => {
+    recipe.steps.forEach((step, idx) => {
         const stepDiv = document.createElement('div');
-        stepDiv.className = 'step-item';
+        stepDiv.className = 'step-input-group';
+        
+        let prevResult = idx === 0 ? recipe.baseDrugName : recipe.steps[idx - 1].ingredientName;
+        
+        const ingredientOptions = ingredients.map(ing => 
+            `<option value="${ing.id}" ${ing.id === step.ingredientId ? 'selected' : ''}>🌿 ${ing.name} (x${ing.function})</option>`
+        ).join('');
+        
         stepDiv.innerHTML = `
             <div class="step-header">
                 <span class="step-number">Étape ${step.number}</span>
-                <button type="button" class="remove-step" onclick="removeStep(this)">Supprimer</button>
+                <button type="button" class="btn-remove-step" onclick="removeStep(${idx})">✕ Supprimer</button>
             </div>
             <div class="step-inputs">
-                <div class="form-group">
-                    <label>Ingrédient/Produit 1</label>
-                    <select class="ingredient-select">
-                        <option value="">-- Sélectionner --</option>
-                        ${ingredients.map(ing => `<option value="${ing.id}" ${ing.id === step.ingredient1 ? 'selected' : ''}>${ing.name}</option>`).join('')}
-                    </select>
+                <div class="previous-result">
+                    🧪 Résultat précédent: <strong>${prevResult}</strong>
                 </div>
-                <div class="form-group">
-                    <label>Ingrédient/Produit 2</label>
-                    <select class="ingredient-select">
-                        <option value="">-- Sélectionner --</option>
-                        ${ingredients.map(ing => `<option value="${ing.id}" ${ing.id === step.ingredient2 ? 'selected' : ''}>${ing.name}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Nom du produit intermédiaire</label>
-                    <input type="text" class="step-product-name" placeholder="ex: Purple Cake" value="${step.intermediateProduct}">
-                </div>
+                <select class="ingredient-select" onchange="updatePrice(); updatePreviousResults();">
+                    <option value="">+ Choisir ingrédient à mélanger...</option>
+                    ${ingredientOptions}
+                </select>
             </div>
         `;
         stepsContainer.appendChild(stepDiv);
     });
 
-    updateFinalPrice();
+    updatePrice();
 
-    // Delete old recipe and switch to builder tab
-    deleteRecipe(id);
+    // Switch to builder tab
     tabButtons[0].click();
     saveRecipeBtn.textContent = '✅ Mettre à Jour Recette';
 }
@@ -544,17 +618,36 @@ function renderTreeViewer() {
 
     let html = '<h3>Arbre de Transformation</h3>';
     
-    currentRecipe.steps.forEach(step => {
-        const ing1 = ingredients.find(i => i.id === step.ingredient1);
-        const ing2 = ingredients.find(i => i.id === step.ingredient2);
-
+    // Get base drug icon
+    const baseDrug = baseDrugs.find(d => d.id === currentRecipe.baseDrugId);
+    const baseDrugIcon = baseDrug ? baseDrug.icon : 'default.png';
+    
+    html += `
+        <div class="tree-node">
+            <div class="tree-box" style="background: #6366f1;">
+                <img src="icons/${baseDrugIcon}" alt="${currentRecipe.baseDrugName}">
+                ${currentRecipe.baseDrugName}
+            </div>
+        </div>
+    `;
+    
+    currentRecipe.steps.forEach((step, idx) => {
+        const ing = ingredients.find(i => i.id === step.ingredientId);
+        const iconPath = ing ? ing.icon : 'default.png';
+        
         html += `
             <div class="tree-node">
-                ${ing1 ? `<div class="tree-box"><img src="icons/${ing1.icon}" alt="${ing1.name}">${ing1.name}</div>` : ''}
-                <span class="tree-arrow">+</span>
-                ${ing2 ? `<div class="tree-box"><img src="icons/${ing2.icon}" alt="${ing2.name}">${ing2.name}</div>` : ''}
+                <span class="tree-arrow">↓ + Étape ${step.number}</span>
+            </div>
+            <div class="tree-node">
+                <div class="tree-box">
+                    <img src="icons/${iconPath}" alt="${step.ingredientName}">
+                    ${step.ingredientName}
+                </div>
                 <span class="tree-arrow">=</span>
-                <div class="tree-box" style="background: #10b981;">${step.intermediateProduct}</div>
+                <div class="tree-box" style="background: #10b981;">
+                    Résultat ${idx + 1}
+                </div>
             </div>
         `;
     });
@@ -564,81 +657,44 @@ function renderTreeViewer() {
             <h4>Produit Final</h4>
             <div class="tree-box" style="background: #f59e0b; font-size: 1.1rem;">
                 ${currentRecipe.finalProduct.name}
+                <div style="font-size: 0.9rem; margin-top: 0.5rem;">Prix: <strong>$${currentRecipe.finalProduct.calculatedPrice.toFixed(2)}</strong></div>
             </div>
-            <p style="margin-top: 0.5rem; font-size: 0.9rem;">
-                Prix base: <strong>$${currentRecipe.finalProduct.basePrice}</strong><br>
-                Effets: <strong>${currentRecipe.finalProduct.effects || 'Aucun'}</strong>
-            </p>
         </div>
     `;
 
     treeViewer.innerHTML = html;
 }
 
-// ===== RESOURCES CALCULATION =====
 function renderResourcesPanel() {
     if (!currentRecipe) {
-        resourcesList.innerHTML = '';
+        resourcesPanel.style.display = 'none';
         return;
     }
-
-    const resourceMap = {};
     
-    // Collect all base ingredients needed
+    resourcesPanel.style.display = 'block';
+    
+    let resourcesHtml = '<h4>Ressources Utilisées</h4>';
+    
+    // Add base drug
+    resourcesHtml += `<div class="resource-item">🔧 ${currentRecipe.baseDrugName}: <strong>$${currentRecipe.baseDrugPrice}</strong></div>`;
+    
+    // Add ingredients
+    let totalIngredientCost = 0;
     currentRecipe.steps.forEach(step => {
-        if (step.ingredient1) {
-            const ing = ingredients.find(i => i.id === step.ingredient1);
-            if (ing) {
-                resourceMap[ing.id] = (resourceMap[ing.id] || 0) + 1;
-            }
-        }
-        if (step.ingredient2) {
-            const ing = ingredients.find(i => i.id === step.ingredient2);
-            if (ing) {
-                resourceMap[ing.id] = (resourceMap[ing.id] || 0) + 1;
-            }
+        const ing = ingredients.find(i => i.id === step.ingredientId);
+        if (ing) {
+            totalIngredientCost += ing.function;
+            resourcesHtml += `<div class="resource-item">🌿 ${step.ingredientName}: <strong>$${ing.function}</strong></div>`;
         }
     });
-
-    let totalPrice = 0;
-    resourcesList.innerHTML = Object.keys(resourceMap).map(ingId => {
-        const ing = ingredients.find(i => i.id === ingId);
-        const qty = resourceMap[ingId];
-        const cost = ing.price * qty;
-        totalPrice += cost;
-
-        return `
-            <div class="resource-item">
-                <div class="resource-item-name">
-                    <img src="icons/${ing.icon}" alt="${ing.name}">
-                    ${ing.name}
-                </div>
-                <div class="resource-item-qty">x${qty}</div>
-                <div class="resource-item-price">$${ing.price} × ${qty} = $${cost}</div>
-            </div>
-        `;
-    }).join('');
-
-    // Add final product info
-    const finalPrice = calculatePrice(
-        currentRecipe.finalProduct.basePrice,
-        currentRecipe.finalProduct.effects
-    );
-
-    resourcesList.innerHTML += `
-        <div class="resource-item" style="border-left-color: #f59e0b;">
-            <div class="resource-item-name">
-                🎯 ${currentRecipe.finalProduct.name}
-            </div>
-            <div class="resource-item-qty">Prix final</div>
-            <div class="resource-item-price"><strong>$${finalPrice.toFixed(2)}</strong></div>
+    
+    resourcesHtml += `
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+            <div class="resource-item">Base: <strong>$${currentRecipe.baseDrugPrice}</strong></div>
+            <div class="resource-item">Ingrédients: <strong>$${totalIngredientCost.toFixed(2)}</strong></div>
+            <div class="resource-item" style="font-weight: bold; font-size: 1.1rem;">Total: <strong style="color: #10b981;">$${currentRecipe.finalProduct.calculatedPrice.toFixed(2)}</strong></div>
         </div>
     `;
-
-    resourcesList.innerHTML += `
-        <div class="resource-item" style="border-left-color: #6366f1; background: var(--bg); border: 2px solid var(--primary);">
-            <div class="resource-item-name">📊 Coût Total Ingrédients</div>
-            <div class="resource-item-qty">$${totalPrice}</div>
-        </div>
-    `;
+    
+    resourcesList.innerHTML = resourcesHtml;
 }

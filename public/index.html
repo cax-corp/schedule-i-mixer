@@ -46,9 +46,20 @@
                             <input type="text" id="recipeName" placeholder="Nom de la recette (ex: Purple Cake)" class="recipe-name-input">
                         </div>
 
+                        <!-- BASE DRUG -->
+                        <div class="base-drug-section">
+                            <h3>Drogue de Base</h3>
+                            <div class="form-group">
+                                <label for="baseDrugSelect">Sélectionner une drogue de base:</label>
+                                <div id="baseDrugSelect" class="base-drug-grid"></div>
+                                <input type="hidden" id="baseDrugValue">
+                            </div>
+                        </div>
+
                         <!-- STEPS -->
                         <div class="steps-container">
                             <h3>Étapes de Transformation</h3>
+                            <p class="steps-info" id="stepsInfo">Chaque étape mélange le résultat précédent avec un nouvel ingrédient</p>
                             <div id="stepsContainer"></div>
                             <button type="button" id="addStepBtn" class="btn-secondary">+ Ajouter Étape</button>
                         </div>
