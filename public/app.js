@@ -120,10 +120,15 @@ const RecipeStorage = {
 
 // ===== BASE DRUGS DATA =====
 const baseDrugs = [
-    { id: 'marijuana', name: 'Marijuana', price: 5, icon: 'Marijuana.webp' },
-    { id: 'methamphetamine', name: 'Methamphetamine', price: 15, icon: 'Meth.webp' },
-    { id: 'shrooms', name: 'Shrooms', price: 8, icon: 'Shroom.webp' },
-    { id: 'cocaine', name: 'Cocaine', price: 12, icon: 'Cocaine.webp' }
+    // Marijuana varieties
+    { id: 'og_kush', name: 'OG Kush', price: 38, icon: 'Marijuana.webp' },
+    { id: 'sour_diesel', name: 'Sour Diesel', price: 40, icon: 'Marijuana.webp' },
+    { id: 'green_crack', name: 'Green Crack', price: 43, icon: 'Marijuana.webp' },
+    { id: 'granddaddy_purple', name: 'Granddaddy Purple', price: 44, icon: 'Marijuana.webp' },
+    // Other bases
+    { id: 'methamphetamine', name: 'Methamphetamine', price: 70, icon: 'Meth.webp' },
+    { id: 'shrooms', name: 'Shrooms', price: 100, icon: 'Shroom.webp' },
+    { id: 'cocaine', name: 'Cocaine', price: 150, icon: 'Cocaine.webp' }
 ];
 
 // ===== INGREDIENTS DATA =====
