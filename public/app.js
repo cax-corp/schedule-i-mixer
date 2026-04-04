@@ -1,31 +1,105 @@
-// === CONSTANTS ===
-const API_BASE = '/api';
+// ===== INGREDIENTS DATA =====
+const ingredients = [
+    { id: 'cuke', name: 'Cuke', price: 2, icon: 'cuke.png', base_effect: 'Energizing' },
+    { id: 'banana', name: 'Banana', price: 2, icon: 'banana.png', base_effect: 'Gingeritis' },
+    { id: 'paracetamol', name: 'Paracetamol', price: 3, icon: 'paracetamol.png', base_effect: 'Sneaky' },
+    { id: 'donut', name: 'Donut', price: 3, icon: 'donut.png', base_effect: 'Calorie-Dense' },
+    { id: 'viagra', name: 'Viagra', price: 4, icon: 'viagra.png', base_effect: 'Tropic Thunder' },
+    { id: 'mouth_wash', name: 'Mouth Wash', price: 4, icon: 'mouth_wash.png', base_effect: 'Balding' },
+    { id: 'flu_medecine', name: 'Flu Medicine', price: 5, icon: 'flu_medecine.png', base_effect: 'Sedating' },
+    { id: 'gasoline', name: 'Gasoline', price: 5, icon: 'gasoline.png', base_effect: 'Toxic' },
+    { id: 'energy_drink', name: 'Energy Drink', price: 6, icon: 'energy_drink.png', base_effect: 'Athletic' },
+    { id: 'motor_oil', name: 'Motor Oil', price: 6, icon: 'motor_oil.png', base_effect: 'Slippery' },
+    { id: 'mega_bean', name: 'Mega Bean', price: 7, icon: 'mega_bean.png', base_effect: 'Foggy' },
+    { id: 'chili', name: 'Chili', price: 7, icon: 'chili.png', base_effect: 'Spicy' },
+    { id: 'battery', name: 'Battery', price: 8, icon: 'battery.png', base_effect: 'Bright-Eyed' },
+    { id: 'iodine', name: 'Iodine', price: 8, icon: 'iodine.png', base_effect: 'Jennerising' },
+    { id: 'addy', name: 'Addy', price: 9, icon: 'addy.png', base_effect: 'Thought-Provoking' },
+    { id: 'horse_semen', name: 'Horse Semen', price: 9, icon: 'horse_semen.png', base_effect: 'Long-Faced' }
+];
 
-// === STATE ===
+// ===== EFFECTS DATA =====
+const effects = [
+    { name: 'Shrinking', multiplier: 0.60 },
+    { name: 'Zombifying', multiplier: 0.58 },
+    { name: 'Cyclopean', multiplier: 0.56 },
+    { name: 'Anti-Gravity', multiplier: 0.54 },
+    { name: 'Long-Faced', multiplier: 0.52 },
+    { name: 'Electrifying', multiplier: 0.50 },
+    { name: 'Glowing', multiplier: 0.48 },
+    { name: 'Tropic Thunder', multiplier: 0.46 },
+    { name: 'Thought-Provoking', multiplier: 0.44 },
+    { name: 'Jennerising', multiplier: 0.42 },
+    { name: 'Bright-Eyed', multiplier: 0.40 },
+    { name: 'Spicy', multiplier: 0.38 },
+    { name: 'Foggy', multiplier: 0.36 },
+    { name: 'Slippery', multiplier: 0.34 },
+    { name: 'Athletic', multiplier: 0.32 },
+    { name: 'Balding', multiplier: 0.30 },
+    { name: 'Calorie-Dense', multiplier: 0.28 },
+    { name: 'Sedating', multiplier: 0.26 },
+    { name: 'Sneaky', multiplier: 0.24 },
+    { name: 'Energizing', multiplier: 0.22 },
+    { name: 'Euphoric', multiplier: 0.18 },
+    { name: 'Focused', multiplier: 0.16 },
+    { name: 'Refreshing', multiplier: 0.14 },
+    { name: 'Munchies', multiplier: 0.12 },
+    { name: 'Calming', multiplier: 0.10 },
+    { name: 'Disorienting', multiplier: 0.00 },
+    { name: 'Explosive', multiplier: 0.00 },
+    { name: 'Laxative', multiplier: 0.00 },
+    { name: 'Paranoia', multiplier: 0.00 },
+    { name: 'Schizophrenic', multiplier: 0.00 },
+    { name: 'Seizure-Inducing', multiplier: 0.00 },
+    { name: 'Smelly', multiplier: 0.00 },
+    { name: 'Toxic', multiplier: 0.00 },
+    { name: 'Gingeritis', multiplier: 0.20 }
+];
+
+// ===== STATE =====
 let recipes = [];
-let plans = [];
-let currentEditingRecipeId = null;
+let currentRecipe = null;
 
-// === DOM ELEMENTS ===
+// ===== DOM ELEMENTS =====
 const themeToggle = document.getElementById('themeToggle');
 const tabButtons = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
-const calcForm = document.getElementById('calcForm');
-const recipeForm = document.getElementById('recipeForm');
-const plannerForm = document.getElementById('plannerForm');
 const alertContainer = document.getElementById('alertContainer');
-const ingredientsList = document.getElementById('ingredientsList');
-const addIngredientBtn = document.getElementById('addIngredientBtn');
-const clearFormBtn = document.getElementById('clearFormBtn');
-const clearPlanBtn = document.getElementById('clearPlanBtn');
-const recipeSelect = document.getElementById('recipeSelect');
-const planRecipeSelect = document.getElementById('planRecipeSelect');
-const recipesList = document.getElementById('recipesList');
-const plansList = document.getElementById('plansList');
-const noRecipes = document.getElementById('noRecipes');
-const noPlans = document.getElementById('noPlans');
 
-// === THEME MANAGEMENT ===
+// Builder elements
+const recipeName = document.getElementById('recipeName');
+const stepsContainer = document.getElementById('stepsContainer');
+const addStepBtn = document.getElementById('addStepBtn');
+const finalProductName = document.getElementById('finalProductName');
+const finalProductPrice = document.getElementById('finalProductPrice');
+const finalProductEffects = document.getElementById('finalProductEffects');
+const saveRecipeBtn = document.getElementById('saveRecipeBtn');
+const clearBuilderBtn = document.getElementById('clearBuilderBtn');
+const finalCalculatedPrice = document.getElementById('finalCalculatedPrice');
+const effectsMultiplier = document.getElementById('effectsMultiplier');
+const effectsHint = document.getElementById('effectsHint');
+
+// Recipes list elements
+const recipesList = document.getElementById('recipesList');
+const noRecipes = document.getElementById('noRecipes');
+
+// Viewer elements
+const recipeViewerSelect = document.getElementById('recipeViewerSelect');
+const treeViewer = document.getElementById('treeViewer');
+const resourcesPanel = document.getElementById('resourcesPanel');
+const resourcesList = document.getElementById('resourcesList');
+
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    loadRecipes();
+    setupTabListener();
+    setupBuilderListeners();
+    setupViewerListeners();
+    populateEffectsHint();
+});
+
+// ===== THEME MANAGEMENT =====
 function initTheme() {
     const isDark = localStorage.getItem('darkMode') === 'true';
     if (isDark) {
@@ -40,427 +114,400 @@ themeToggle.addEventListener('click', () => {
     themeToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
 });
 
-// === TAB MANAGEMENT ===
-tabButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const tabName = btn.getAttribute('data-tab');
-        
-        tabButtons.forEach(b => b.classList.remove('active'));
-        tabContents.forEach(c => c.classList.remove('active'));
-        
-        btn.classList.add('active');
-        document.getElementById(tabName).classList.add('active');
-        
-        // Load data when switching tabs
-        if (tabName === 'recipes') {
-            loadRecipes();
-        } else if (tabName === 'planner') {
-            loadPlans();
-        }
-    });
-});
+// ===== TAB MANAGEMENT =====
+function setupTabListener() {
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabName = btn.getAttribute('data-tab');
+            
+            tabButtons.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            btn.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
 
-// === ALERTS ===
+            if (tabName === 'recipes') {
+                renderRecipesList();
+            } else if (tabName === 'viewer') {
+                updateViewerSelect();
+            }
+        });
+    });
+}
+
+// ===== ALERT FUNCTION =====
 function showAlert(message, type = 'success') {
-    const alert = document.createElement('div');
-    alert.className = `alert ${type}`;
-    alert.textContent = message;
-    alertContainer.appendChild(alert);
-    
-    setTimeout(() => {
-        alert.remove();
-    }, 5000);
-}
-
-// === RECIPES ===
-
-// Add ingredient input
-addIngredientBtn.addEventListener('click', () => {
-    addIngredientField();
-});
-
-function addIngredientField(name = '', quantity = '', unit = '') {
-    const ingredientDiv = document.createElement('div');
-    ingredientDiv.className = 'ingredient-field';
-    ingredientDiv.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px; align-items: flex-end;';
-    
-    const id = `ingredient-${Date.now()}-${Math.random()}`;
-    
-    ingredientDiv.innerHTML = `
-        <div class="form-field">
-            <label for="${id}-name">Ingrédient</label>
-            <input type="text" id="${id}-name" class="ingredient-name" placeholder="ex: Sucre" value="${name}" required>
-        </div>
-        <div class="form-field">
-            <label for="${id}-qty">Quantité</label>
-            <input type="number" id="${id}-qty" class="ingredient-qty" min="0.1" step="0.1" value="${quantity}" required>
-        </div>
-        <div class="form-field">
-            <label for="${id}-unit">Unité</label>
-            <input type="text" id="${id}-unit" class="ingredient-unit" placeholder="kg, L" value="${unit}" required>
-        </div>
-        <button type="button" class="btn-delete" style="padding: 10px; height: 40px; min-width: auto;">✕</button>
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.innerHTML = `
+        <span>${message}</span>
+        <button class="alert-close" onclick="this.parentElement.remove()">✕</button>
     `;
-    
-    const deleteBtn = ingredientDiv.querySelector('.btn-delete');
-    deleteBtn.addEventListener('click', () => ingredientDiv.remove());
-    
-    ingredientsList.appendChild(ingredientDiv);
+    alertContainer.prepend(alertDiv);
+    setTimeout(() => alertDiv.remove(), 4000);
 }
 
-// Save recipe
-recipeForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+// ===== EFFECTS HINT =====
+function populateEffectsHint() {
+    const effectNames = effects.map(e => e.name).join(', ');
+    effectsHint.textContent = `Available effects: ${effectNames}`;
+}
+
+// ===== BUILDER SETUP =====
+function setupBuilderListeners() {
+    addStepBtn.addEventListener('click', addStep);
+    saveRecipeBtn.addEventListener('click', saveRecipe);
+    clearBuilderBtn.addEventListener('click', clearBuilder);
+    finalProductEffects.addEventListener('input', updateFinalPrice);
+}
+
+// ===== STEP MANAGEMENT =====
+function addStep() {
+    const stepCount = stepsContainer.querySelectorAll('.step-item').length + 1;
+    const stepDiv = document.createElement('div');
+    stepDiv.className = 'step-item';
+    stepDiv.innerHTML = `
+        <div class="step-header">
+            <span class="step-number">Étape ${stepCount}</span>
+            <button type="button" class="remove-step" onclick="removeStep(this)">Supprimer</button>
+        </div>
+        <div class="step-inputs">
+            <div class="form-group">
+                <label>Ingrédient/Produit 1</label>
+                <select class="ingredient-select">
+                    <option value="">-- Sélectionner --</option>
+                    ${ingredients.map(ing => `<option value="${ing.id}">${ing.name}</option>`).join('')}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Ingrédient/Produit 2</label>
+                <select class="ingredient-select">
+                    <option value="">-- Sélectionner --</option>
+                    ${ingredients.map(ing => `<option value="${ing.id}">${ing.name}</option>`).join('')}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nom du produit intermédiaire</label>
+                <input type="text" class="step-product-name" placeholder="ex: Purple Cake">
+            </div>
+        </div>
+    `;
+    stepsContainer.appendChild(stepDiv);
+}
+
+function removeStep(btn) {
+    btn.closest('.step-item').remove();
+}
+
+// ===== PRICE CALCULATION =====
+function calculatePrice(basePrice, effectNames) {
+    const selectedEffects = effectNames
+        .split(',')
+        .map(e => e.trim())
+        .filter(e => e.length > 0);
     
-    const ingredients = Array.from(ingredientsList.querySelectorAll('.ingredient-field')).map(field => ({
-        name: field.querySelector('.ingredient-name').value,
-        quantity: parseFloat(field.querySelector('.ingredient-qty').value),
-        unit: field.querySelector('.ingredient-unit').value
-    }));
+    const multiplierSum = selectedEffects.reduce((sum, effectName) => {
+        const effect = effects.find(e => e.name.toLowerCase() === effectName.toLowerCase());
+        return sum + (effect ? effect.multiplier : 0);
+    }, 0);
     
-    if (ingredients.length === 0) {
-        showAlert('Ajoutez au moins un ingrédient', 'error');
+    return basePrice * (1 + multiplierSum);
+}
+
+function updateFinalPrice() {
+    const basePrice = parseFloat(finalProductPrice.value) || 0;
+    const effectsText = finalProductEffects.value;
+    const finalPrice = calculatePrice(basePrice, effectsText);
+    finalCalculatedPrice.textContent = `$${finalPrice.toFixed(2)}`;
+    
+    const selectedEffects = effectsText.split(',').map(e => e.trim()).filter(e => e.length > 0);
+    const totalMultiplier = selectedEffects.reduce((sum, effectName) => {
+        const effect = effects.find(e => e.name.toLowerCase() === effectName.toLowerCase());
+        return sum + (effect ? effect.multiplier : 0);
+    }, 0);
+    
+    effectsMultiplier.textContent = `Effects multiplier: +${(totalMultiplier * 100).toFixed(0)}%`;
+}
+
+// ===== RECIPE SAVING =====
+function saveRecipe() {
+    const name = recipeName.value.trim();
+    if (!name) {
+        showAlert('Veuillez entrer un nom de recette', 'error');
         return;
     }
-    
+
+    const steps = [];
+    stepsContainer.querySelectorAll('.step-item').forEach((stepDiv, idx) => {
+        const selects = stepDiv.querySelectorAll('.ingredient-select');
+        const productName = stepDiv.querySelector('.step-product-name').value;
+        
+        steps.push({
+            number: idx + 1,
+            ingredient1: selects[0].value,
+            ingredient2: selects[1].value,
+            intermediateProduct: productName
+        });
+    });
+
+    if (steps.length === 0) {
+        showAlert('Ajoutez au moins une étape', 'error');
+        return;
+    }
+
+    const finalName = finalProductName.value.trim();
+    const finalPrice = parseFloat(finalProductPrice.value) || 0;
+    const finalEffects = finalProductEffects.value;
+
     const recipe = {
-        name: document.getElementById('recipeName').value,
-        description: document.getElementById('recipeDescription').value,
-        output: {
-            name: document.getElementById('outputName').value,
-            quantity: parseFloat(document.getElementById('outputQty').value),
-            unit: document.getElementById('outputUnitName').value
+        id: Date.now(),
+        name: name,
+        steps: steps,
+        finalProduct: {
+            name: finalName,
+            basePrice: finalPrice,
+            effects: finalEffects
         },
-        ingredients: ingredients,
-        notes: document.getElementById('recipeNotes').value
-    };
-    
-    try {
-        const method = currentEditingRecipeId ? 'PUT' : 'POST';
-        const url = currentEditingRecipeId 
-            ? `${API_BASE}/recipes/${currentEditingRecipeId}` 
-            : `${API_BASE}/recipes`;
-        
-        const response = await fetch(url, {
-            method: method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(recipe)
-        });
-        
-        if (!response.ok) throw new Error('Erreur lors de la sauvegarde');
-        
-        showAlert(currentEditingRecipeId ? 'Recette mise à jour!' : 'Recette sauvegardée!');
-        recipeForm.reset();
-        ingredientsList.innerHTML = '';
-        currentEditingRecipeId = null;
-        loadRecipes();
-    } catch (error) {
-        showAlert('Erreur: ' + error.message, 'error');
-    }
-});
-
-clearFormBtn.addEventListener('click', () => {
-    recipeForm.reset();
-    ingredientsList.innerHTML = '';
-    currentEditingRecipeId = null;
-});
-
-// Load recipes
-async function loadRecipes() {
-    try {
-        const response = await fetch(`${API_BASE}/recipes`);
-        recipes = await response.json();
-        
-        // Update calculator and planner selects
-        updateRecipeSelect();
-        
-        // Display recipes
-        displayRecipes();
-    } catch (error) {
-        showAlert('Erreur lors du chargement des recettes', 'error');
-    }
-}
-
-function updateRecipeSelect() {
-    const defaultOption = '<option value="">-- Sélectionner une recette --</option>';
-    recipeSelect.innerHTML = defaultOption;
-    planRecipeSelect.innerHTML = defaultOption;
-    
-    recipes.forEach(recipe => {
-        const option1 = document.createElement('option');
-        option1.value = recipe.id;
-        option1.textContent = recipe.name;
-        recipeSelect.appendChild(option1);
-        
-        const option2 = document.createElement('option');
-        option2.value = recipe.id;
-        option2.textContent = recipe.name;
-        planRecipeSelect.appendChild(option2);
-    });
-}
-
-function displayRecipes() {
-    const hasRecipes = recipes.length > 0;
-    noRecipes.style.display = hasRecipes ? 'none' : 'block';
-    recipesList.innerHTML = '';
-    
-    recipes.forEach(recipe => {
-        const card = document.createElement('div');
-        card.className = 'recipe-card';
-        card.innerHTML = `
-            <h3>${recipe.name}</h3>
-            <div class="recipe-info">
-                <div class="recipe-info-item">
-                    <span class="recipe-info-label">Description:</span>
-                    <span class="recipe-info-value">${recipe.description || '-'}</span>
-                </div>
-                <div class="recipe-info-item">
-                    <span class="recipe-info-label">Produit:</span>
-                    <span class="recipe-info-value">${recipe.output.quantity} ${recipe.output.unit} de ${recipe.output.name}</span>
-                </div>
-                <div class="recipe-info-item">
-                    <span class="recipe-info-label">Ingrédients:</span>
-                    <span class="recipe-info-value">${recipe.ingredients.length}</span>
-                </div>
-                ${recipe.notes ? `<div class="recipe-info-item"><span class="recipe-info-label">Notes:</span><span class="recipe-info-value">${recipe.notes}</span></div>` : ''}
-            </div>
-            <div class="recipe-actions">
-                <button class="btn-view" data-id="${recipe.id}">👁️ Détails</button>
-                <button class="btn-edit" data-id="${recipe.id}">✏️ Éditer</button>
-                <button class="btn-delete-recipe" data-id="${recipe.id}">🗑️ Supprimer</button>
-            </div>
-        `;
-        
-        card.querySelector('.btn-view').addEventListener('click', () => viewRecipeDetails(recipe));
-        card.querySelector('.btn-edit').addEventListener('click', () => editRecipe(recipe));
-        card.querySelector('.btn-delete-recipe').addEventListener('click', () => deleteRecipe(recipe.id));
-        
-        recipesList.appendChild(card);
-    });
-}
-
-function viewRecipeDetails(recipe) {
-    let details = `📋 ${recipe.name}\n\n`;
-    details += `Produit: ${recipe.output.quantity} ${recipe.output.unit} de ${recipe.output.name}\n\n`;
-    details += `Ingrédients:\n`;
-    recipe.ingredients.forEach(ing => {
-        details += `  • ${ing.quantity} ${ing.unit} de ${ing.name}\n`;
-    });
-    if (recipe.notes) {
-        details += `\nNotes: ${recipe.notes}`;
-    }
-    alert(details);
-}
-
-function editRecipe(recipe) {
-    currentEditingRecipeId = recipe.id;
-    document.getElementById('recipeName').value = recipe.name;
-    document.getElementById('recipeDescription').value = recipe.description || '';
-    document.getElementById('outputName').value = recipe.output.name;
-    document.getElementById('outputQty').value = recipe.output.quantity;
-    document.getElementById('outputUnitName').value = recipe.output.unit;
-    document.getElementById('recipeNotes').value = recipe.notes || '';
-    
-    ingredientsList.innerHTML = '';
-    recipe.ingredients.forEach(ing => {
-        addIngredientField(ing.name, ing.quantity, ing.unit);
-    });
-    
-    // Scroll to form
-    document.querySelector('[data-tab="recipes"]').click();
-    document.getElementById('recipeForm').scrollIntoView({ behavior: 'smooth' });
-    showAlert('Mode édition activé');
-}
-
-async function deleteRecipe(id) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette recette?')) return;
-    
-    try {
-        const response = await fetch(`${API_BASE}/recipes/${id}`, {
-            method: 'DELETE'
-        });
-        
-        if (!response.ok) throw new Error('Erreur lors de la suppression');
-        
-        showAlert('Recette supprimée!');
-        loadRecipes();
-    } catch (error) {
-        showAlert('Erreur: ' + error.message, 'error');
-    }
-}
-
-// === CALCULATOR ===
-calcForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const selectedId = recipeSelect.value;
-    const recipe = recipes.find(r => r.id === selectedId);
-    
-    if (!recipe) {
-        showAlert('Veuillez sélectionner une recette', 'error');
-        return;
-    }
-    
-    const desiredQuantity = parseFloat(document.getElementById('outputQuantity').value);
-    const recipeQuantity = recipe.output.quantity;
-    const ratio = desiredQuantity / recipeQuantity;
-    
-    let resultHTML = `<div class="result-item">
-        <span class="result-label">Recette</span>
-        <span class="result-value">${recipe.name}</span>
-    </div>`;
-    
-    resultHTML += `<div class="result-item">
-        <span class="result-label">Production</span>
-        <span class="result-value">${desiredQuantity} ${recipe.output.unit}</span>
-    </div>`;
-    
-    resultHTML += `<div class="result-item" style="border-top: 2px solid var(--border); padding-top: 20px;">
-        <span class="result-label" style="font-weight: 700;">Ingrédients nécessaires:</span>
-    </div>`;
-    
-    recipe.ingredients.forEach(ing => {
-        const neededQuantity = (ing.quantity * ratio).toFixed(3);
-        resultHTML += `<div class="result-item">
-            <span class="result-label">${ing.name}</span>
-            <span class="result-value">${neededQuantity} ${ing.unit}</span>
-        </div>`;
-    });
-    
-    document.getElementById('resultContent').innerHTML = resultHTML;
-    document.getElementById('calculatorResult').style.display = 'block';
-});
-
-// Update output unit when recipe is selected
-recipeSelect.addEventListener('change', (e) => {
-    const recipe = recipes.find(r => r.id === e.target.value);
-    if (recipe) {
-        document.getElementById('outputUnit').value = recipe.output.unit;
-    }
-});
-
-planRecipeSelect.addEventListener('change', (e) => {
-    const recipe = recipes.find(r => r.id === e.target.value);
-    if (recipe) {
-        document.getElementById('planUnit').value = recipe.output.unit;
-    }
-});
-
-// === PLANNER ===
-plannerForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const selectedId = planRecipeSelect.value;
-    const recipe = recipes.find(r => r.id === selectedId);
-    
-    if (!recipe) {
-        showAlert('Veuillez sélectionner une recette', 'error');
-        return;
-    }
-    
-    const plan = {
-        recipeId: selectedId,
-        recipeName: recipe.name,
-        date: document.getElementById('planDate').value,
-        quantity: parseFloat(document.getElementById('planQuantity').value),
-        unit: recipe.output.unit,
-        notes: document.getElementById('planNotes').value,
         createdAt: new Date().toISOString()
     };
-    
-    try {
-        const response = await fetch(`${API_BASE}/plans`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(plan)
-        });
-        
-        if (!response.ok) throw new Error('Erreur lors de la sauvegarde du plan');
-        
-        showAlert('Plan de production créé!');
-        plannerForm.reset();
-        document.getElementById('planUnit').value = '';
-        loadPlans();
-    } catch (error) {
-        showAlert('Erreur: ' + error.message, 'error');
+
+    recipes.push(recipe);
+    saveRecipesToStorage();
+    showAlert(`Recette "${name}" sauvegardée!`, 'success');
+    clearBuilder();
+}
+
+function clearBuilder() {
+    recipeName.value = '';
+    stepsContainer.innerHTML = '';
+    finalProductName.value = '';
+    finalProductPrice.value = '';
+    finalProductEffects.value = '';
+    finalCalculatedPrice.textContent = '$0.00';
+    effectsMultiplier.textContent = '';
+}
+
+// ===== RECIPES STORAGE =====
+function saveRecipesToStorage() {
+    localStorage.setItem('scheduleRecipes', JSON.stringify(recipes));
+}
+
+function loadRecipes() {
+    const stored = localStorage.getItem('scheduleRecipes');
+    recipes = stored ? JSON.parse(stored) : [];
+}
+
+// ===== RECIPES LIST DISPLAY =====
+function renderRecipesList() {
+    if (recipes.length === 0) {
+        recipesList.innerHTML = '';
+        noRecipes.style.display = 'block';
+        return;
     }
-});
 
-clearPlanBtn.addEventListener('click', () => {
-    plannerForm.reset();
-    document.getElementById('planUnit').value = '';
-});
+    noRecipes.style.display = 'none';
+    recipesList.innerHTML = recipes.map(recipe => `
+        <div class="recipe-card">
+            <h3>${recipe.name}</h3>
+            <div class="recipe-info">
+                <div>Étapes: <strong>${recipe.steps.length}</strong></div>
+                <div>Produit final: <strong>${recipe.finalProduct.name}</strong></div>
+                <div>Prix base: <strong>$${recipe.finalProduct.basePrice}</strong></div>
+            </div>
+            <div class="recipe-card-actions">
+                <button onclick="editRecipe(${recipe.id})" class="recipe-card-edit">✏️ Éditer</button>
+                <button onclick="deleteRecipe(${recipe.id})" class="recipe-card-delete">🗑️ Supprimer</button>
+            </div>
+        </div>
+    `).join('');
+}
 
-async function loadPlans() {
-    try {
-        const response = await fetch(`${API_BASE}/plans`);
-        plans = await response.json();
-        displayPlans();
-    } catch (error) {
-        showAlert('Erreur lors du chargement des plans', 'error');
+function deleteRecipe(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette recette?')) {
+        recipes = recipes.filter(r => r.id !== id);
+        saveRecipesToStorage();
+        renderRecipesList();
+        showAlert('Recette supprimée', 'success');
     }
 }
 
-function displayPlans() {
-    const hasPlans = plans.length > 0;
-    noPlans.style.display = hasPlans ? 'none' : 'block';
-    plansList.innerHTML = '';
-    
-    // Sort by date
-    const sortedPlans = [...plans].sort((a, b) => new Date(a.date) - new Date(b.date));
-    
-    sortedPlans.forEach(plan => {
-        const date = new Date(plan.date).toLocaleDateString('fr-FR');
-        const card = document.createElement('div');
-        card.className = 'recipe-card';
-        card.innerHTML = `
-            <h3>${plan.recipeName}</h3>
-            <div class="recipe-info">
-                <div class="recipe-info-item">
-                    <span class="recipe-info-label">Date:</span>
-                    <span class="recipe-info-value">${date}</span>
-                </div>
-                <div class="recipe-info-item">
-                    <span class="recipe-info-label">Quantité:</span>
-                    <span class="recipe-info-value">${plan.quantity} ${plan.unit}</span>
-                </div>
-                ${plan.notes ? `<div class="recipe-info-item"><span class="recipe-info-label">Notes:</span><span class="recipe-info-value">${plan.notes}</span></div>` : ''}
+function editRecipe(id) {
+    const recipe = recipes.find(r => r.id === id);
+    if (!recipe) return;
+
+    // Load recipe into builder
+    recipeName.value = recipe.name;
+    finalProductName.value = recipe.finalProduct.name;
+    finalProductPrice.value = recipe.finalProduct.basePrice;
+    finalProductEffects.value = recipe.finalProduct.effects;
+
+    stepsContainer.innerHTML = '';
+    recipe.steps.forEach(step => {
+        const stepDiv = document.createElement('div');
+        stepDiv.className = 'step-item';
+        stepDiv.innerHTML = `
+            <div class="step-header">
+                <span class="step-number">Étape ${step.number}</span>
+                <button type="button" class="remove-step" onclick="removeStep(this)">Supprimer</button>
             </div>
-            <div class="recipe-actions">
-                <button class="btn-delete-plan" data-id="${plan.id}">🗑️ Supprimer</button>
+            <div class="step-inputs">
+                <div class="form-group">
+                    <label>Ingrédient/Produit 1</label>
+                    <select class="ingredient-select">
+                        <option value="">-- Sélectionner --</option>
+                        ${ingredients.map(ing => `<option value="${ing.id}" ${ing.id === step.ingredient1 ? 'selected' : ''}>${ing.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Ingrédient/Produit 2</label>
+                    <select class="ingredient-select">
+                        <option value="">-- Sélectionner --</option>
+                        ${ingredients.map(ing => `<option value="${ing.id}" ${ing.id === step.ingredient2 ? 'selected' : ''}>${ing.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nom du produit intermédiaire</label>
+                    <input type="text" class="step-product-name" placeholder="ex: Purple Cake" value="${step.intermediateProduct}">
+                </div>
             </div>
         `;
-        
-        card.querySelector('.btn-delete-plan').addEventListener('click', () => deletePlan(plan.id));
-        plansList.appendChild(card);
+        stepsContainer.appendChild(stepDiv);
+    });
+
+    updateFinalPrice();
+
+    // Delete old recipe and switch to builder tab
+    deleteRecipe(id);
+    tabButtons[0].click();
+    saveRecipeBtn.textContent = '✅ Mettre à Jour Recette';
+}
+
+// ===== VIEWER SETUP =====
+function setupViewerListeners() {
+    recipeViewerSelect.addEventListener('change', () => {
+        const id = parseInt(recipeViewerSelect.value);
+        if (id) {
+            currentRecipe = recipes.find(r => r.id === id);
+            renderTreeViewer();
+            renderResourcesPanel();
+        }
     });
 }
 
-async function deletePlan(id) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce plan?')) return;
-    
-    try {
-        const response = await fetch(`${API_BASE}/plans/${id}`, {
-            method: 'DELETE'
-        });
-        
-        if (!response.ok) throw new Error('Erreur lors de la suppression');
-        
-        showAlert('Plan supprimé!');
-        loadPlans();
-    } catch (error) {
-        showAlert('Erreur: ' + error.message, 'error');
+function updateViewerSelect() {
+    recipeViewerSelect.innerHTML = '<option value="">-- Sélectionner une recette --</option>';
+    recipes.forEach(recipe => {
+        const option = document.createElement('option');
+        option.value = recipe.id;
+        option.textContent = recipe.name;
+        recipeViewerSelect.appendChild(option);
+    });
+}
+
+// ===== TREE VISUALIZATION =====
+function renderTreeViewer() {
+    if (!currentRecipe) {
+        treeViewer.innerHTML = '<p class="empty-state">Sélectionnez une recette</p>';
+        return;
     }
-}
 
-// === INITIALIZATION ===
-function init() {
-    initTheme();
-    loadRecipes();
+    let html = '<h3>Arbre de Transformation</h3>';
     
-    // Set today's date as default in planner
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('planDate').value = today;
+    currentRecipe.steps.forEach(step => {
+        const ing1 = ingredients.find(i => i.id === step.ingredient1);
+        const ing2 = ingredients.find(i => i.id === step.ingredient2);
+
+        html += `
+            <div class="tree-node">
+                ${ing1 ? `<div class="tree-box"><img src="icons/${ing1.icon}" alt="${ing1.name}">${ing1.name}</div>` : ''}
+                <span class="tree-arrow">+</span>
+                ${ing2 ? `<div class="tree-box"><img src="icons/${ing2.icon}" alt="${ing2.name}">${ing2.name}</div>` : ''}
+                <span class="tree-arrow">=</span>
+                <div class="tree-box" style="background: #10b981;">${step.intermediateProduct}</div>
+            </div>
+        `;
+    });
+
+    html += `
+        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 2px solid var(--border);">
+            <h4>Produit Final</h4>
+            <div class="tree-box" style="background: #f59e0b; font-size: 1.1rem;">
+                ${currentRecipe.finalProduct.name}
+            </div>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+                Prix base: <strong>$${currentRecipe.finalProduct.basePrice}</strong><br>
+                Effets: <strong>${currentRecipe.finalProduct.effects || 'Aucun'}</strong>
+            </p>
+        </div>
+    `;
+
+    treeViewer.innerHTML = html;
 }
 
-init();
+// ===== RESOURCES CALCULATION =====
+function renderResourcesPanel() {
+    if (!currentRecipe) {
+        resourcesList.innerHTML = '';
+        return;
+    }
+
+    const resourceMap = {};
+    
+    // Collect all base ingredients needed
+    currentRecipe.steps.forEach(step => {
+        if (step.ingredient1) {
+            const ing = ingredients.find(i => i.id === step.ingredient1);
+            if (ing) {
+                resourceMap[ing.id] = (resourceMap[ing.id] || 0) + 1;
+            }
+        }
+        if (step.ingredient2) {
+            const ing = ingredients.find(i => i.id === step.ingredient2);
+            if (ing) {
+                resourceMap[ing.id] = (resourceMap[ing.id] || 0) + 1;
+            }
+        }
+    });
+
+    let totalPrice = 0;
+    resourcesList.innerHTML = Object.keys(resourceMap).map(ingId => {
+        const ing = ingredients.find(i => i.id === ingId);
+        const qty = resourceMap[ingId];
+        const cost = ing.price * qty;
+        totalPrice += cost;
+
+        return `
+            <div class="resource-item">
+                <div class="resource-item-name">
+                    <img src="icons/${ing.icon}" alt="${ing.name}">
+                    ${ing.name}
+                </div>
+                <div class="resource-item-qty">x${qty}</div>
+                <div class="resource-item-price">$${ing.price} × ${qty} = $${cost}</div>
+            </div>
+        `;
+    }).join('');
+
+    // Add final product info
+    const finalPrice = calculatePrice(
+        currentRecipe.finalProduct.basePrice,
+        currentRecipe.finalProduct.effects
+    );
+
+    resourcesList.innerHTML += `
+        <div class="resource-item" style="border-left-color: #f59e0b;">
+            <div class="resource-item-name">
+                🎯 ${currentRecipe.finalProduct.name}
+            </div>
+            <div class="resource-item-qty">Prix final</div>
+            <div class="resource-item-price"><strong>$${finalPrice.toFixed(2)}</strong></div>
+        </div>
+    `;
+
+    resourcesList.innerHTML += `
+        <div class="resource-item" style="border-left-color: #6366f1; background: var(--bg); border: 2px solid var(--primary);">
+            <div class="resource-item-name">📊 Coût Total Ingrédients</div>
+            <div class="resource-item-qty">$${totalPrice}</div>
+        </div>
+    `;
+}
