@@ -120,10 +120,10 @@ const RecipeStorage = {
 
 // ===== BASE DRUGS DATA =====
 const baseDrugs = [
-    { id: 'marijuana', name: 'Marijuana', price: 5, icon: 'cuke.png' },
-    { id: 'methamphetamine', name: 'Methamphetamine', price: 15, icon: 'addy.png' },
-    { id: 'shrooms', name: 'Shrooms', price: 8, icon: 'mega_bean.png' },
-    { id: 'cocaine', name: 'Cocaine', price: 12, icon: 'gasoline.png' }
+    { id: 'marijuana', name: 'Marijuana', price: 5, icon: 'Marijuana.webp' },
+    { id: 'methamphetamine', name: 'Methamphetamine', price: 15, icon: 'Meth.webp' },
+    { id: 'shrooms', name: 'Shrooms', price: 8, icon: 'Shroom.webp' },
+    { id: 'cocaine', name: 'Cocaine', price: 12, icon: 'Cocaine.webp' }
 ];
 
 // ===== INGREDIENTS DATA =====
