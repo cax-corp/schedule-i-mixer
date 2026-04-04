@@ -234,6 +234,15 @@ document.addEventListener('DOMContentLoaded', () => {
     setupBuilderListeners();
     setupViewerListeners();
     populateEffectsHint();
+    
+    // Close ingredient pickers when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.ingredient-picker')) {
+            document.querySelectorAll('.ingredient-picker-dropdown').forEach(d => {
+                d.classList.add('hidden');
+            });
+        }
+    });
 });
 
 // ===== BASE DRUG SELECTOR =====
@@ -341,8 +350,12 @@ function addStep() {
         }
     }
     
-    const ingredientOptions = ingredients.map(ing => 
-        `<option value="${ing.id}">🌿 ${ing.name} (x${ing.function})</option>`
+    const ingredientGrid = ingredients.map(ing => 
+        `<div class="ingredient-option" data-ingredient-id="${ing.id}" onclick="selectIngredient(this, ${stepIndex})">
+            <img src="icons/${ing.icon}" alt="${ing.name}" class="ingredient-icon-option">
+            <div class="ingredient-name-option">${ing.name}</div>
+            <div class="ingredient-price-option">$${ing.function}</div>
+        </div>`
     ).join('');
     
     stepDiv.innerHTML = `
@@ -354,10 +367,18 @@ function addStep() {
             <div class="previous-result">
                 🧪 Résultat précédent: <strong>${previousResult}</strong>
             </div>
-            <select class="ingredient-select" onchange="updatePrice(); updatePreviousResults();">
-                <option value="">+ Choisir ingrédient à mélanger...</option>
-                ${ingredientOptions}
-            </select>
+            <div class="ingredient-picker" id="picker-${stepIndex}">
+                <button type="button" class="ingredient-picker-btn" onclick="toggleIngredientPicker(${stepIndex})">
+                    <span class="ingredient-select-display">+ Choisir ingrédient...</span>
+                    <span class="ingredient-select-value"></span>
+                </button>
+                <div class="ingredient-picker-dropdown hidden">
+                    <div class="ingredient-grid-picker">
+                        ${ingredientGrid}
+                    </div>
+                </div>
+                <input type="hidden" class="ingredient-select" value="">
+            </div>
         </div>
     `;
     
@@ -371,6 +392,46 @@ function removeStep(index) {
         updatePrice();
         updatePreviousResults();
     }
+}
+
+function toggleIngredientPicker(stepIndex) {
+    const picker = document.getElementById(`picker-${stepIndex}`);
+    const dropdown = picker.querySelector('.ingredient-picker-dropdown');
+    
+    // Close all other pickers
+    document.querySelectorAll('.ingredient-picker-dropdown').forEach(d => {
+        if (d !== dropdown) d.classList.add('hidden');
+    });
+    
+    dropdown.classList.toggle('hidden');
+}
+
+function selectIngredient(element, stepIndex) {
+    const ingredientId = element.getAttribute('data-ingredient-id');
+    const ing = ingredients.find(i => i.id === ingredientId);
+    
+    if (!ing) return;
+    
+    const picker = document.getElementById(`picker-${stepIndex}`);
+    const hiddenInput = picker.querySelector('.ingredient-select');
+    const displayBtn = picker.querySelector('.ingredient-picker-btn');
+    const dropdown = picker.querySelector('.ingredient-picker-dropdown');
+    
+    // Update hidden input
+    hiddenInput.value = ingredientId;
+    
+    // Update button display
+    displayBtn.innerHTML = `
+        <img src="icons/${ing.icon}" alt="${ing.name}" style="width: 24px; height: 24px; margin-right: 8px;">
+        <span class="ingredient-select-display">${ing.name} ($${ing.function})</span>
+    `;
+    
+    // Close dropdown
+    dropdown.classList.add('hidden');
+    
+    // Trigger updates
+    updatePrice();
+    updatePreviousResults();
 }
 
 function updatePreviousResults() {
@@ -562,9 +623,16 @@ function editRecipe(id) {
         
         let prevResult = idx === 0 ? recipe.baseDrugName : recipe.steps[idx - 1].ingredientName;
         
-        const ingredientOptions = ingredients.map(ing => 
-            `<option value="${ing.id}" ${ing.id === step.ingredientId ? 'selected' : ''}>🌿 ${ing.name} (x${ing.function})</option>`
+        const ingredientGrid = ingredients.map(ing => 
+            `<div class="ingredient-option" data-ingredient-id="${ing.id}" onclick="selectIngredient(this, ${idx})">
+                <img src="icons/${ing.icon}" alt="${ing.name}" class="ingredient-icon-option">
+                <div class="ingredient-name-option">${ing.name}</div>
+                <div class="ingredient-price-option">$${ing.function}</div>
+            </div>`
         ).join('');
+        
+        const selectedIng = ingredients.find(i => i.id === step.ingredientId);
+        const selectedDisplay = selectedIng ? `<img src="icons/${selectedIng.icon}" alt="${selectedIng.name}" style="width: 24px; height: 24px; margin-right: 8px;"><span class="ingredient-select-display">${selectedIng.name} ($${selectedIng.function})</span>` : '<span class="ingredient-select-display">+ Choisir ingrédient...</span>';
         
         stepDiv.innerHTML = `
             <div class="step-header">
@@ -575,10 +643,17 @@ function editRecipe(id) {
                 <div class="previous-result">
                     🧪 Résultat précédent: <strong>${prevResult}</strong>
                 </div>
-                <select class="ingredient-select" onchange="updatePrice(); updatePreviousResults();">
-                    <option value="">+ Choisir ingrédient à mélanger...</option>
-                    ${ingredientOptions}
-                </select>
+                <div class="ingredient-picker" id="picker-${idx}">
+                    <button type="button" class="ingredient-picker-btn" onclick="toggleIngredientPicker(${idx})">
+                        ${selectedDisplay}
+                    </button>
+                    <div class="ingredient-picker-dropdown hidden">
+                        <div class="ingredient-grid-picker">
+                            ${ingredientGrid}
+                        </div>
+                    </div>
+                    <input type="hidden" class="ingredient-select" value="${step.ingredientId}">
+                </div>
             </div>
         `;
         stepsContainer.appendChild(stepDiv);

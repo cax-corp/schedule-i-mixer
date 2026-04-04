@@ -417,6 +417,102 @@ main {
     font-size: 12px;
 }
 
+/* Ingredient Picker */
+.ingredient-picker {
+    flex: 1;
+    position: relative;
+}
+
+.ingredient-picker-btn {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.ingredient-picker-btn:hover {
+    border-color: var(--primary);
+    background: var(--bg-alt);
+}
+
+.ingredient-picker-btn img {
+    margin-right: 8px;
+}
+
+.ingredient-picker-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg);
+    border: 1px solid var(--primary);
+    border-top: none;
+    border-radius: 0 0 3px 3px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 100;
+    margin-top: -1px;
+}
+
+.ingredient-picker-dropdown.hidden {
+    display: none;
+}
+
+.ingredient-grid-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+    padding: 8px;
+}
+
+.ingredient-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg);
+}
+
+.ingredient-option:hover {
+    border-color: var(--primary);
+    background: var(--bg-alt);
+    transform: scale(1.05);
+}
+
+.ingredient-icon-option {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.ingredient-name-option {
+    font-size: 11px;
+    font-weight: 500;
+    text-align: center;
+    color: var(--text);
+}
+
+.ingredient-price-option {
+    font-size: 10px;
+    color: var(--text-lighter);
+}
+
+.hidden {
+    display: none;
+}
+
 .previous-result-value {
     font-weight: 500;
     color: var(--text);
