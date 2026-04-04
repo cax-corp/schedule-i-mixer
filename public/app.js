@@ -1,3 +1,123 @@
+// ===== API CONFIG =====
+const API_BASE = window.location.hostname === 'localhost' 
+    ? 'http://localhost:8787/api'  // Local dev
+    : 'https://api.schedule.cax-corp.com/api';  // Production
+const USE_API = window.location.hostname !== 'localhost' || false;  // Toggle for testing
+
+// ===== API ABSTRACTION LAYER =====
+const RecipeAPI = {
+    async list() {
+        if (!USE_API) return RecipeStorage.loadAll();
+        
+        try {
+            const response = await fetch(`${API_BASE}/recipes`);
+            if (!response.ok) throw new Error('API error');
+            const result = await response.json();
+            return result.data || [];
+        } catch (error) {
+            console.error('API error, falling back to localStorage:', error);
+            return RecipeStorage.loadAll();
+        }
+    },
+
+    async get(id) {
+        if (!USE_API) return RecipeStorage.load(id);
+        
+        try {
+            const response = await fetch(`${API_BASE}/recipes/${id}`);
+            if (!response.ok) throw new Error('Not found');
+            const result = await response.json();
+            return result.data;
+        } catch (error) {
+            console.error('API error, falling back to localStorage:', error);
+            return RecipeStorage.load(id);
+        }
+    },
+
+    async create(recipe) {
+        if (!USE_API) return RecipeStorage.save(recipe);
+        
+        try {
+            const response = await fetch(`${API_BASE}/recipes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(recipe)
+            });
+            if (!response.ok) throw new Error('Creation failed');
+            const result = await response.json();
+            return result.data;
+        } catch (error) {
+            console.error('API error, falling back to localStorage:', error);
+            return RecipeStorage.save(recipe);
+        }
+    },
+
+    async update(id, recipe) {
+        if (!USE_API) return RecipeStorage.save({ ...recipe, id });
+        
+        try {
+            const response = await fetch(`${API_BASE}/recipes/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(recipe)
+            });
+            if (!response.ok) throw new Error('Update failed');
+            const result = await response.json();
+            return result.data;
+        } catch (error) {
+            console.error('API error, falling back to localStorage:', error);
+            return RecipeStorage.save({ ...recipe, id });
+        }
+    },
+
+    async delete(id) {
+        if (!USE_API) return RecipeStorage.delete(id);
+        
+        try {
+            const response = await fetch(`${API_BASE}/recipes/${id}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) throw new Error('Delete failed');
+            return true;
+        } catch (error) {
+            console.error('API error, falling back to localStorage:', error);
+            return RecipeStorage.delete(id);
+        }
+    }
+};
+
+// ===== FALLBACK LOCALSTORAGE =====
+const RecipeStorage = {
+    loadAll() {
+        const data = localStorage.getItem('schedule_recipes');
+        return data ? JSON.parse(data) : [];
+    },
+
+    load(id) {
+        const recipes = this.loadAll();
+        return recipes.find(r => r.id === id);
+    },
+
+    save(recipe) {
+        const recipes = this.loadAll();
+        const idx = recipes.findIndex(r => r.id === recipe.id);
+        if (idx >= 0) {
+            recipes[idx] = { ...recipe, updatedAt: new Date().toISOString() };
+        } else {
+            recipes.push({ ...recipe, id: recipe.id || `recipe_${Date.now()}`, createdAt: new Date().toISOString() });
+        }
+        localStorage.setItem('schedule_recipes', JSON.stringify(recipes));
+        return recipes.find(r => r.id === recipe.id || r.id === `recipe_${Date.now()}`);
+    },
+
+    delete(id) {
+        let recipes = this.loadAll();
+        recipes = recipes.filter(r => r.id !== id);
+        localStorage.setItem('schedule_recipes', JSON.stringify(recipes));
+        return true;
+    }
+};
+
 // ===== INGREDIENTS DATA =====
 const ingredients = [
     { id: 'cuke', name: 'Cuke', price: 2, icon: 'cuke.png', base_effect: 'Energizing' },
@@ -230,7 +350,7 @@ function updateFinalPrice() {
 }
 
 // ===== RECIPE SAVING =====
-function saveRecipe() {
+async function saveRecipe() {
     const name = recipeName.value.trim();
     if (!name) {
         showAlert('Veuillez entrer un nom de recette', 'error');
@@ -260,7 +380,7 @@ function saveRecipe() {
     const finalEffects = finalProductEffects.value;
 
     const recipe = {
-        id: Date.now(),
+        id: `recipe_${Date.now()}`,
         name: name,
         steps: steps,
         finalProduct: {
@@ -271,10 +391,16 @@ function saveRecipe() {
         createdAt: new Date().toISOString()
     };
 
-    recipes.push(recipe);
-    saveRecipesToStorage();
-    showAlert(`Recette "${name}" sauvegardée!`, 'success');
-    clearBuilder();
+    try {
+        const saved = await RecipeAPI.create(recipe);
+        recipes.push(saved);
+        showAlert(`Recette "${name}" sauvegardée!`, 'success');
+        clearBuilder();
+        renderRecipesList();
+    } catch (error) {
+        showAlert('Erreur lors de la sauvegarde', 'error');
+        console.error('Save error:', error);
+    }
 }
 
 function clearBuilder() {
@@ -287,14 +413,14 @@ function clearBuilder() {
     effectsMultiplier.textContent = '';
 }
 
-// ===== RECIPES STORAGE =====
-function saveRecipesToStorage() {
-    localStorage.setItem('scheduleRecipes', JSON.stringify(recipes));
-}
-
-function loadRecipes() {
-    const stored = localStorage.getItem('scheduleRecipes');
-    recipes = stored ? JSON.parse(stored) : [];
+// ===== RECIPES LOADING =====
+async function loadRecipes() {
+    try {
+        recipes = await RecipeAPI.list();
+    } catch (error) {
+        console.error('Load error:', error);
+        recipes = [];
+    }
 }
 
 // ===== RECIPES LIST DISPLAY =====
@@ -322,12 +448,17 @@ function renderRecipesList() {
     `).join('');
 }
 
-function deleteRecipe(id) {
+async function deleteRecipe(id) {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette recette?')) {
-        recipes = recipes.filter(r => r.id !== id);
-        saveRecipesToStorage();
-        renderRecipesList();
-        showAlert('Recette supprimée', 'success');
+        try {
+            await RecipeAPI.delete(id);
+            recipes = recipes.filter(r => r.id !== id);
+            renderRecipesList();
+            showAlert('Recette supprimée', 'success');
+        } catch (error) {
+            showAlert('Erreur lors de la suppression', 'error');
+            console.error('Delete error:', error);
+        }
     }
 }
 

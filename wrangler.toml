@@ -1,0 +1,28 @@
+name = "schedule-mixer-api"
+main = "src/index.js"
+type = "service"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Environment Configuration
+env = {
+  production = {
+    name = "schedule-mixer-api",
+    routes = [
+      { pattern = "api.schedule.cax-corp.com/api/*", zone_name = "cax-corp.com" }
+    ]
+  },
+  development = {
+    name = "schedule-mixer-api-dev"
+  }
+}
+
+# KV Namespace Bindings (for storing recipes)
+[[kv_namespaces]]
+binding = "RECIPES"
+id = "your_kv_id_here"
+preview_id = "your_kv_preview_id_here"
+
+# Allowed origins for CORS
+[env.production.vars]
+ALLOWED_ORIGINS = "https://schedule.cax-corp.com,http://localhost:8080"
