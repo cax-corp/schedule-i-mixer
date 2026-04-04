@@ -1,0 +1,18 @@
+name = "schedule-mixer"
+type = "javascript"
+workers_dev = true
+compatibility_date = "2024-01-01"
+
+# Note: account_id sera défini via:
+# - Variable d'environnement CLOUDFLARE_ACCOUNT_ID (wrangler deploy)
+# - Ou automatiquement via GitHub Actions + Cloudflare Pages git integration
+
+[build]
+command = "npm install"
+
+# KV Namespaces seront définis via:
+# - Variable d'environnement CLOUDFLARE_API_TOKEN (GitHub Actions)
+# - Ou automatiquement lors de wrangler deploy
+
+[env.production]
+vars = { ENVIRONMENT = "production" }

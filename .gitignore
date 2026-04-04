@@ -1,0 +1,16 @@
+node_modules/
+.wrangler/
+dist/
+*.log
+.DS_Store
+.env.local
+.env
+.env.production.local
+.env.development.local
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.cache/
+.parcel-cache/

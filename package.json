@@ -1,0 +1,21 @@
+{
+  "name": "schedule-mixer",
+  "version": "1.0.0",
+  "description": "Schedule I Recipe Calculator and Planner",
+  "main": "index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build": "echo 'No build needed for this static site'",
+    "start": "wrangler dev"
+  },
+  "keywords": ["schedule", "mixer", "calculator", "recipe"],
+  "author": "Gamer",
+  "license": "MIT",
+  "dependencies": {
+    "itty-router": "^4.1.1"
+  },
+  "devDependencies": {
+    "wrangler": "^3.43.0"
+  }
+}
